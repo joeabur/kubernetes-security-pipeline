@@ -1,0 +1,17 @@
+- rule: Terminal shell in container
+  desc: Detect an interactive shell spawned inside a container
+  condition: >
+    spawned_process and container and proc.name in (bash, sh, ash, zsh)
+  output: >
+    Shell spawned in container (user=%user.name container=%container.name
+    image=%container.image.repository:%container.image.tag)
+  priority: WARNING
+  tags: [container, shell, mitre_execution]
+
+- rule: Write below sensitive host path
+  desc: Detect writes to host-mounted sensitive paths
+  condition: >
+    open_write and container and fd.name startswith /host/etc
+  output: "Write to sensitive host path (file=%fd.name container=%container.name)"
+  priority: CRITICAL
+  tags: [container, host, mitre_privilege_escalation]

@@ -1,0 +1,4 @@
+* @security-platform-team
+/.github/ @security-platform-team
+/kubernetes/ @platform-security-team
+/policies/ @platform-security-team

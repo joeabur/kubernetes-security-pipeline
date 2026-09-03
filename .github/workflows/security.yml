@@ -1,0 +1,140 @@
+name: Security Pipeline
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+
+env:
+  SECURITY_THRESHOLD: HIGH
+  IMAGE: secure-demo-api:${{ github.sha }}
+
+jobs:
+  sast:
+    name: SAST - Semgrep
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/python
+            p/security-audit
+            p/dockerfile
+          generateSarif: true
+          auditOn: push
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semgrep-report
+          path: semgrep.sarif
+
+  sca-and-secrets:
+    name: SCA and secret scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Dependency review
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: SCA with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scanners: vuln,secret
+          format: sarif
+          output: reports/trivy-fs.sarif
+          severity: CRITICAL,HIGH
+          exit-code: 1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sca-secret-reports
+          path: reports/
+
+  iac-and-kubernetes:
+    name: IaC and Kubernetes security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: kubernetes/base
+          framework: kubernetes
+          output_format: sarif
+          output_file_path: reports/checkov.sarif
+          soft_fail: false
+      - name: Trivy Kubernetes misconfiguration scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          input: kubernetes/base
+          format: sarif
+          output: reports/trivy-kubernetes.sarif
+          severity: CRITICAL,HIGH
+          exit-code: 1
+      - name: Trivy Helm misconfiguration scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          input: helm/secure-demo-api
+          format: sarif
+          output: reports/trivy-helm.sarif
+          severity: CRITICAL,HIGH
+          exit-code: 1
+      - name: Kyverno policy tests
+        uses: kyverno/action-install-cli@v0.2.0
+      - run: kyverno apply policies/kyverno --resource kubernetes/base --table
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: iac-kubernetes-reports
+          path: reports/
+
+  container:
+    name: Container scan and SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: docker build --file docker/Dockerfile --tag "$IMAGE" .
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE }}
+          format: sarif
+          output: reports/trivy-image.sarif
+          severity: CRITICAL,HIGH
+          exit-code: 1
+      - name: Generate SBOM with Syft
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.IMAGE }}
+          format: cyclonedx-json
+          output-file: reports/sbom.cdx.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: container-reports
+          path: reports/
+
+  gate:
+    name: Security gate
+    needs: [sast, sca-and-secrets, iac-and-kubernetes, container]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enforce upstream checks
+        run: |
+          test "${{ needs.sast.result }}" = success
+          test "${{ needs.sca-and-secrets.result }}" = success
+          test "${{ needs.iac-and-kubernetes.result }}" = success
+          test "${{ needs.container.result }}" = success

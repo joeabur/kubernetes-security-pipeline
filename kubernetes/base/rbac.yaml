@@ -1,0 +1,24 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: secure-demo-api-read-config
+  namespace: security-demo
+rules:
+  - apiGroups: [""]
+    resources: [configmaps]
+    resourceNames: [secure-demo-api-config]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: secure-demo-api-read-config
+  namespace: security-demo
+subjects:
+  - kind: ServiceAccount
+    name: secure-demo-api
+    namespace: security-demo
+roleRef:
+  kind: Role
+  name: secure-demo-api-read-config
+  apiGroup: rbac.authorization.k8s.io

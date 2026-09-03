@@ -1,0 +1,24 @@
+replicaCount: 2
+image:
+  repository: ghcr.io/example/secure-demo-api
+  tag: 0.1.0
+  digest: sha256:REPLACE_WITH_RELEASE_DIGEST
+  pullPolicy: IfNotPresent
+serviceAccount:
+  create: true
+  automount: false
+service:
+  port: 80
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+resources:
+  requests: {cpu: 50m, memory: 64Mi}
+  limits: {cpu: 250m, memory: 128Mi}

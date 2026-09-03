@@ -1,0 +1,44 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restricted-pods
+  annotations:
+    policies.kyverno.io/title: Enforce restricted pod controls
+    policies.kyverno.io/category: Pod Security
+    policies.kyverno.io/severity: high
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: disallow-privilege-escalation
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [falco, kyverno]
+      validate:
+        message: "Privilege escalation and privileged containers are prohibited."
+        pattern:
+          spec:
+            =(containers):
+              - securityContext:
+                  =(privileged): false
+                  =(allowPrivilegeEscalation): false
+    - name: require-non-root
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [falco, kyverno]
+      validate:
+        message: "Pods must explicitly run as non-root."
+        pattern:
+          spec:
+            securityContext:
+              runAsNonRoot: true

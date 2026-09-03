@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documentation placeholders and test fixtures only"
+paths = ['''^reports/.*\.json$''']

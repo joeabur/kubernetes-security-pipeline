@@ -1,0 +1,10 @@
+{
+  "findings": [
+    {
+      "id": "DEMO-LOW-001",
+      "severity": "LOW",
+      "title": "Demonstration informational finding",
+      "component": "sample"
+    }
+  ]
+}

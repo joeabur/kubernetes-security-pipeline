@@ -1,0 +1,20 @@
+# Kyverno CLI example: kyverno test examples/kyverno-tests
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: demo-no-privileged
+spec:
+  validationFailureAction: Enforce
+  rules:
+    - name: deny-privileged
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      validate:
+        message: privileged containers are not allowed
+        pattern:
+          spec:
+            containers:
+              - securityContext:
+                  privileged: false

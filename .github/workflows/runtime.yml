@@ -1,0 +1,19 @@
+name: Runtime Security
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  falco-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Validate Falco rules syntax
+        run: |
+          test -s examples/falco-rules.yaml
+          grep -q "Terminal shell in container" examples/falco-rules.yaml
+      - name: Runtime deployment guidance
+        run: echo "Deploy Falco as a cluster-level DaemonSet in a dedicated runtime lab."
