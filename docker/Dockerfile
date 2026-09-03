@@ -1,11 +1,11 @@
-FROM python:3.12.8-slim-bookworm@sha256:2199a62885a12290dc9c5be3ca0681d367576ab7bf037da120e564723292a2f0 AS runtime
+FROM python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PORT=8080
 
-RUN addgroup --system --gid 10001 appgroup \
-    && adduser --system --uid 10001 --ingroup appgroup appuser
+RUN addgroup -S -g 10001 appgroup \
+    && adduser -S -D -H -u 10001 -G appgroup appuser
 WORKDIR /app
 COPY app ./app
 USER 10001:10001
