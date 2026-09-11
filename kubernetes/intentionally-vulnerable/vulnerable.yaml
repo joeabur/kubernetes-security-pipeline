@@ -40,12 +40,13 @@ spec:
     spec:
       hostNetwork: true
       serviceAccountName: overly-powerful
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: vulnerable
           image: nginx:latest
           securityContext:
             privileged: true
-            runAsUser: 0
             allowPrivilegeEscalation: true
             capabilities:
               add: [SYS_ADMIN, NET_RAW]
