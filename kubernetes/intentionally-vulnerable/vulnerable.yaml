@@ -48,7 +48,8 @@ spec:
             runAsUser: 0
             allowPrivilegeEscalation: false
             capabilities:
-              add: [SYS_ADMIN, NET_RAW]
+              add: [SYS_ADMIN]
+              drop: [NET_RAW]
           volumeMounts:
             - name: host-root
               mountPath: /host
