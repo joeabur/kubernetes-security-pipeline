@@ -46,7 +46,7 @@ spec:
           securityContext:
             privileged: true
             runAsUser: 0
-            allowPrivilegeEscalation: true
+            allowPrivilegeEscalation: false
             capabilities:
               add: [SYS_ADMIN, NET_RAW]
           volumeMounts:
