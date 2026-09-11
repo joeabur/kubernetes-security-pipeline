@@ -18,7 +18,7 @@ jobs:
     name: SAST - Semgrep
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: semgrep/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d # v1
         with:
           config: >-
@@ -37,7 +37,7 @@ jobs:
     name: SCA and secret scanning
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Gitleaks
         uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
         env:
@@ -61,7 +61,7 @@ jobs:
     name: IaC and Kubernetes security
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Checkov
         uses: bridgecrewio/checkov-action@a8664e3a0549367977f0cda990a34311835c87c0 # master
         with:
@@ -101,7 +101,7 @@ jobs:
     name: Container scan and SBOM
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - run: docker build --file docker/Dockerfile --tag "$IMAGE" .
       - name: Trivy image scan
         uses: aquasecurity/trivy-action@master
