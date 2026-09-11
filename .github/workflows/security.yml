@@ -27,7 +27,7 @@ jobs:
             p/dockerfile
           generateSarif: true
           auditOn: push
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: semgrep-report
@@ -51,7 +51,7 @@ jobs:
           output: reports/trivy-fs.sarif
           severity: CRITICAL,HIGH
           exit-code: 1
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: sca-secret-reports
@@ -91,7 +91,7 @@ jobs:
       - name: Kyverno policy tests
         uses: kyverno/action-install-cli@fcee92fca5c883169ef9927acf543e0b5fc58289 # v0.2.0
       - run: kyverno apply policies/kyverno --resource kubernetes/base --table
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: iac-kubernetes-reports
@@ -117,7 +117,7 @@ jobs:
           image: ${{ env.IMAGE }}
           format: cyclonedx-json
           output-file: reports/sbom.cdx.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: container-reports
