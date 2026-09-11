@@ -47,6 +47,7 @@ spec:
             privileged: true
             runAsUser: 0
             allowPrivilegeEscalation: true
+            readOnlyRootFilesystem: true
             capabilities:
               add: [SYS_ADMIN, NET_RAW]
           volumeMounts:
